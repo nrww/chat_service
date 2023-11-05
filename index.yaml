@@ -1,0 +1,170 @@
+openapi: '3.0.0'
+info:
+  version: '1.0.0'
+  title: 'Order API'
+  description: API для сервиса сообщений
+servers:
+  - url: http://localhost:8084
+    description: Example server
+paths:
+  /message:
+    get:
+      summary: Чтение чата
+      parameters:
+      - name: order_id
+        description: Уникальный идентификатор заказа
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/message_id'
+      responses:
+        '200':
+          description: Найденный чат заказа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/messages'
+        400:
+          description: Недостаточно параметров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Заказ не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Отправление сообщения
+      parameters:
+      - name: order_id
+        description: Идентефикатор заказа
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: sender_id
+        description: Идентефикатор отправителя
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: text
+        description: Статус заказа 
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Идентификатор, отправленного сообщения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message_id'
+        400:
+          description: Недостаточно параметров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Ошибка добавления заказа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Изменение сообщения
+      parameters:
+      - name: id
+        description: Уникальный идентификатор заказа
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/message_id'
+      - name: text
+        description: Текст сообщения 
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Успешное изменение сообщения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message_id'
+        400:
+          description: Недостаточно параметров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Сообщение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    message_id:
+      description: Уникальный идентификатор сообщения
+      type: integer
+    messages:
+      type: array
+      items:
+        $ref: '#/components/schemas/message'  
+    message:
+      type: object
+      required:
+        - id
+        - order_id
+        - sender_id
+        - text
+        - date
+      properties:
+        id:
+          $ref: '#/components/schemas/message_id'
+        order_id:
+          type: integer
+        sender_id:
+          type: integer
+        text:
+          type: string
+        date:
+          type: string
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          description: Сообщение о ошибке
+          type: string
+  securitySchemes:
+      basicAuth:     
+        type: http
+        scheme: basic
