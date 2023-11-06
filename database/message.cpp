@@ -24,7 +24,6 @@ namespace database
     {
         try
         {
-
             Poco::Data::Session session = database::Database::get().create_session();
             Statement create_stmt(session);
             create_stmt << "CREATE TABLE IF NOT EXISTS `message` ("
@@ -40,21 +39,17 @@ namespace database
                 now;
             
         }
-
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
+            std::cout << "connection:" << e.displayText() << std::endl;
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
+            std::cout << "statement:" << e.displayText() << std::endl;
         }
     }
 
-    void Message::update_in_mysql()
+    bool Message::update_in_mysql()
     {
         try
         {
@@ -71,18 +66,17 @@ namespace database
             update.execute();
 
             std::cout << "updated: " << _id << std::endl;
+            return true;
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
+        return false;
     }
 
     bool Message::delete_in_mysql(long id)
@@ -92,7 +86,6 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Statement del(session);
             
-            Message a;
             del << "DELETE FROM `message` WHERE `message_id` = ?;",
                 use(id),
                 range(0, 1); 
@@ -100,17 +93,13 @@ namespace database
             std::cout << "deleted: " << id << std::endl;
             return true;
         }
-
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         return false;
     }
@@ -141,7 +130,6 @@ namespace database
         user.order_id() = object->getValue<long>("order_id");
         user.sender_id() = object->getValue<long>("sender_id");
 
-
         return user;
     }
 
@@ -167,17 +155,13 @@ namespace database
             Poco::Data::RecordSet rs(select);
             if (rs.moveFirst()) return a;
         }
-
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         return {};
     }
@@ -185,7 +169,6 @@ namespace database
     std::vector<Message> Message::read_by_order_id(long order_id)
     {
         std::vector<Message> result;
-
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
@@ -207,25 +190,21 @@ namespace database
                 if (select.execute())
                     result.push_back(a);
             }
+            return result;
         }
-
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-
-            std::cout << "statement:" << e.displayText() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
-        return result;
+        return std::vector<Message>();
     }
 
     bool Message::save_to_mysql()
     {
-
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
@@ -253,13 +232,11 @@ namespace database
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
-            std::cout << "connection: " << e.what() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-            std::cout << "statement: " << e.displayText() << std::endl;
-            throw;
+            std::cout << e.displayText() << std::endl;
         }
         return false;
     }

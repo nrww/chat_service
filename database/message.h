@@ -35,7 +35,7 @@ namespace database
             long        &sender_id();
 
             static void init();
-            void update_in_mysql();
+            bool update_in_mysql();
             bool save_to_mysql();
             static bool delete_in_mysql(long id);
 
