@@ -53,9 +53,11 @@ public:
         const HTTPServerRequest& request)
     {
 
-        std::cout << request.getMethod() <<" request:" << request.getURI()<< std::endl;
         if (hasSubstr(request.getURI(),"/message")) 
+        {
+            std::cout << request.getMethod() <<" request:" << request.getURI()<< std::endl;
             return new ServiceHandler(_format);
+        }
         return 0;
     }
 
