@@ -16,9 +16,9 @@ paths:
         in: query
         required: true
         schema:
-          $ref: '#/components/schemas/message_id'
+          type: integer
       responses:
-        '200':
+        200:
           description: Найденный чат заказа
           content:
             application/json:
@@ -64,7 +64,7 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        200:
           description: Идентификатор, отправленного сообщения
           content:
             application/json:
@@ -92,7 +92,7 @@ paths:
       summary: Изменение сообщения
       parameters:
       - name: id
-        description: Уникальный идентификатор заказа
+        description: Уникальный идентификатор сообщения
         in: query
         required: true
         schema:
