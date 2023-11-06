@@ -67,7 +67,6 @@ class ServiceHandler : public HTTPRequestHandler
 {
 private:
 
-
     void badRequestError(HTTPServerResponse &response,  std::string instance)
     {
         response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
@@ -107,17 +106,20 @@ public:
     void handleRequest(HTTPServerRequest &request,
                        HTTPServerResponse &response)
     {
+
         HTMLForm form(request, request.stream());
         try
         {
             response.set("Access-Control-Allow-Origin", "*"); //для работы swagger
+
             if (hasSubstr(request.getURI(), "/message"))
             {
                 if(request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET)
                 {
                     if(form.has("order_id"))
                     {
-                        long order_id = atol(form.get("order_id").c_str());
+                        std::string order_id_str = form.get("order_id");
+                        long order_id = atol(order_id_str.c_str());
                         auto results = database::Message::read_by_order_id(order_id);
                         if (!results.empty())
                         {
@@ -135,7 +137,7 @@ public:
                         }
                         else
                         {
-                            notFoundError(response, request.getURI(), "Order id " + std::to_string(order_id) + " not found");
+                            notFoundError(response, request.getURI(), "Order id " + order_id_str + " not found");
                             return;
                         }
                     }
@@ -155,8 +157,7 @@ public:
                         //add check foreign key
                         message.sender_id() = atol(form.get("sender_id").c_str());
                         message.order_id() = atol(form.get("order_id").c_str());
-    
-    
+       
                         if (message.save_to_mysql())
                         {                   
                             response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
@@ -185,28 +186,34 @@ public:
                 {
                     if(form.has("id") && form.has("text"))
                     {
-                        long id = atol(form.get("id").c_str());
+                        std::string id_str = form.get("id");
+                        long id = atol(id_str.c_str());
                         
                         std::optional<database::Message> message = database::Message::read_by_id(id);
                         if(message)
                         {
-
                             message->text() = form.get("text");
-                            message->update_in_mysql();
+                            if(message->update_in_mysql())
+                            {
+                                response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                                response.setChunkedTransferEncoding(true);
+                                response.setContentType("application/json");
+                                Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
+                                root->set("updated", id_str);
+                                std::ostream &ostr = response.send();
+                                Poco::JSON::Stringifier::stringify(root, ostr);
 
-                            response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-                            response.setChunkedTransferEncoding(true);
-                            response.setContentType("application/json");
-                            Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
-                            root->set("updated", id);
-                            std::ostream &ostr = response.send();
-                            Poco::JSON::Stringifier::stringify(root, ostr);
-
-                            return;
+                                return;
+                            }
+                            else
+                            {
+                                badRequestError(response, request.getURI());
+                                return;
+                            }               
                         }
                         else
                         {
-                            notFoundError(response, request.getURI(), "Message not found");
+                            notFoundError(response, request.getURI(), "Message id " + id_str + " not found");
                             return;
                         }
                     }
