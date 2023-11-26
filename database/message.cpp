@@ -34,7 +34,7 @@ namespace database
                         << "`order_id` INT NOT NULL,"
                         << "PRIMARY KEY (`message_id`),"
                         << "FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`),"
-                        << "FOREIGN KEY (`sender_id`) REFERENCES `user` (`user_id`)"
+                        << "KEY (`sender_id`)"
                         << ");",
                 now;
             
@@ -48,6 +48,36 @@ namespace database
             std::cout << "statement:" << e.displayText() << std::endl;
         }
     }
+
+    bool Message::is_user_exist()
+    {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            auto hint = Database::sharding_user(_sender_id);
+            Statement select(session);
+            int exist;
+            select  << "SELECT EXISTS(SELECT `user_id` FROM `user` WHERE `user_id` = ?)"
+                    << hint,
+                into(exist),
+                use(_sender_id),
+                range(0, 1); //  iterate over result set one row at a time
+
+            select.execute();
+            if(exist) return true;           
+        }
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << e.displayText() << std::endl;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+            std::cout << e.displayText() << std::endl;
+        }
+
+        return false;
+    }
+
 
     bool Message::update_in_mysql()
     {

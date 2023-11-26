@@ -152,19 +152,26 @@ public:
                 {
                     if (form.has("text") && form.has("sender_id") && form.has("order_id"))
                     {
+                        std::string error_msg = "Adding an message failed. ";
+                        bool flag = true;
                         database::Message message;
                         message.text() = form.get("text");
                         //add check foreign key
                         message.sender_id() = atol(form.get("sender_id").c_str());
                         message.order_id() = atol(form.get("order_id").c_str());
-       
-                        if (message.save_to_mysql())
+
+                        if(!(flag = message.is_user_exist()))
+                        {
+                            error_msg += "Пользователь с таким id не существует!";
+                        }
+
+                        if (flag && message.save_to_mysql())
                         {                   
                             response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                             response.setChunkedTransferEncoding(true);
                             response.setContentType("application/json");
                             Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
-                            root->set("created", message.id());
+                            root->set("inserted_id", message.id());
                             std::ostream &ostr = response.send();
                             Poco::JSON::Stringifier::stringify(root, ostr);
 
@@ -172,7 +179,7 @@ public:
                         }
                         else
                         {
-                            notFoundError(response, request.getURI(), "Adding an message failed");
+                            notFoundError(response, request.getURI(), error_msg);
                             return;
                         }
                     }

@@ -7,6 +7,7 @@ Config::Config()
         _login = std::getenv("DB_LOGIN");
         _password = std::getenv("DB_PASSWORD");
         _database = std::getenv("DB_DATABASE");
+        _n_shards = atoi(std::getenv("SHARDS_COUNT"));//fix
 }
 
 Config &Config::get()
@@ -39,6 +40,11 @@ const std::string &Config::get_database() const
     return _database;
 }
 
+const size_t  &Config::get_n_shards() const
+{
+    return _n_shards;
+}
+
 std::string &Config::port()
 {
     return _port;
@@ -62,4 +68,9 @@ std::string &Config::password()
 std::string &Config::database()
 {
     return _database;
+}
+
+size_t &Config::n_shards()
+{
+    return _n_shards;
 }

@@ -11,12 +11,16 @@
 namespace database{
     class Database{
         private:
+            static size_t _n_shards;
             std::string _connection_string;
             std::unique_ptr<Poco::Data::SessionPool> _pool;
             Database();
         public:
             static Database& get();
             Poco::Data::Session create_session();
+            static size_t get_max_shard();
+            static std::string sharding_user(long id);
+            static std::vector<std::string> get_all_hints();
     };
 }
 #endif
